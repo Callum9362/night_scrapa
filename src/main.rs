@@ -7,6 +7,9 @@ use std::time::Instant;
 #[derive(Debug)]
 struct Country {
     name: String,
+    capital: String,
+    population: Option<i32>,
+    area: Option<f64>,
 }
 
 async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
@@ -16,12 +19,50 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
         .await?;
 
     let doc = Html::parse_document(&res);
-    let country_selector = Selector::parse(".country-name")?;
+    let country_selector = Selector::parse(".country")?;
+    let name_selector = Selector::parse(".country-name")?;
+    let capital_selector
+        = Selector::parse(".country-capital")?;
+    let population_selector
+        = Selector::parse(".country-population")?;
+    let area_selector
+        = Selector::parse(".country-area")?;
 
     let countries = doc
         .select(&country_selector)
-        .map(|element| Country {
-            name: element.text().collect::<String>().trim().to_string(),
+        .map(|element| {
+
+            let name = element
+                .select(&name_selector)
+                .next()
+                .map(|el| el.text().collect::<String>().trim().to_string())
+                .unwrap_or_default();
+
+            let capital = element
+                .select(&capital_selector)
+                .next()
+                .map(|el| el.text().collect::<String>().trim().to_string())
+                .unwrap_or_default();
+
+            let population = element
+                .select(&population_selector)
+                .next()
+                .map(|el| el.text().collect::<String>().trim().parse::<i32>().ok())
+                .flatten();
+
+            let area = element
+                .select(&area_selector)
+                .next()
+                .map(|el| el.text().collect::<String>().trim().parse::<f64>().ok())
+                .flatten();
+
+            Country {
+                name: name,
+                capital: capital,
+                population: population,
+                area: area,
+            }
+
         })
         .collect();
 
@@ -30,15 +71,28 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
 
 async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(), Box<dyn Error>> {
     for country in countries {
+        if country.name.is_empty() || country.capital.is_empty() {
+            continue;
+        }
+
         sqlx::query!(
             r#"
-            INSERT OR IGNORE INTO countries (name) VALUES (?1)
+            INSERT INTO countries (name, capital, population, area)
+            VALUES (?1, ?2, ?3, ?4)
+            ON CONFLICT(name) DO UPDATE SET
+                capital = excluded.capital,
+                population = excluded.population,
+                area = excluded.area
             "#,
-            country.name
+            country.name,
+            country.capital,
+            country.population,
+            country.area
         )
         .execute(pool)
         .await?;
     }
+
     Ok(())
 }
 
@@ -74,14 +128,19 @@ mod tests {
             .await
             .unwrap();
         let country_names: Vec<String> = countries
-            .into_iter()
-            .map(|c| c.name)
+            .iter()
+            .map(|c| c.name.clone())
             .collect();
         let expected_countries = vec![
             "Canada".to_string(),
             "United States".to_string(),
             "Mexico".to_string(),
         ];
+        let andorra = countries
+            .into_iter()
+            .find(|c| c.name == "Andorra")
+            .expect("Andorra was not found in the scraped countries");
+
 
         for expected in expected_countries {
             assert!(
@@ -96,6 +155,26 @@ mod tests {
             250,
             "Expected 250 countries, but found {}",
             country_names.len()
+        );
+
+        // Assert Andorra's details
+        assert_eq!(
+            andorra.capital,
+            "Andorra la Vella",
+            "Expected the capital of Andorra to be 'Andorra la Vella', but found '{}'",
+            andorra.capital
+        );
+        assert_eq!(
+            andorra.population,
+            Some(84000),
+            "Expected the population of Andorra to be '84000', but found '{:?}'",
+            andorra.population
+        );
+        assert_eq!(
+            andorra.area,
+            Some(468.0),
+            "Expected the area of Andorra to be '468.0', but found '{:?}'",
+            andorra.area
         );
     }
 }
