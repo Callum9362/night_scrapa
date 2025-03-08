@@ -2,6 +2,7 @@ use reqwest;
 use scraper::{Html, Selector};
 use sqlx::{sqlite::{SqlitePool, SqlitePoolOptions}};
 use std::error::Error;
+use std::time::Instant;
 
 #[derive(Debug)]
 struct Country {
@@ -31,7 +32,7 @@ async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(
     for country in countries {
         sqlx::query!(
             r#"
-            INSERT INTO countries (name) VALUES (?1)
+            INSERT OR IGNORE INTO countries (name) VALUES (?1)
             "#,
             country.name
         )
@@ -43,21 +44,51 @@ async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Set up the database connection pool
+    let start = Instant::now();
+
     let pool = SqlitePoolOptions::new()
         .max_connections(5)
         .connect("sqlite:scraper.db")
         .await?;
 
-    // Scrape countries from the website
     println!("Scraping countries...");
     let countries = scrape_countries().await?;
-    println!("Scraped countries: {:?}", countries);
 
-    // Store countries in the database
     println!("Storing countries in the database...");
     store_countries(&pool, countries).await?;
     println!("Countries stored successfully!");
 
+    let duration = start.elapsed();
+    println!("Total time to scrape and store countries: {:.2?}", duration);
+
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_scrape_countries() {
+        let countries = scrape_countries()
+            .await
+            .unwrap();
+        let country_names: Vec<String> = countries
+            .into_iter()
+            .map(|c| c.name)
+            .collect();
+        let expected_countries = vec![
+            "Canada".to_string(),
+            "United States".to_string(),
+            "Mexico".to_string(),
+        ];
+
+        for expected in expected_countries {
+            assert!(
+                country_names.contains(&expected),
+                "Expected country '{}' not found in the scraped results",
+                expected
+            );
+        }
+    }
 }

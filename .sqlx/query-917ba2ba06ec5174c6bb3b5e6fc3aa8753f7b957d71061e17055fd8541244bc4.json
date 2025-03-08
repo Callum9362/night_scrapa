@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            INSERT INTO countries (name) VALUES (?1)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "917ba2ba06ec5174c6bb3b5e6fc3aa8753f7b957d71061e17055fd8541244bc4"
+}
