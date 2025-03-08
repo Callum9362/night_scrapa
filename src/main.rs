@@ -90,5 +90,12 @@ mod tests {
                 expected
             );
         }
+
+        assert_eq!(
+            country_names.len(),
+            250,
+            "Expected 250 countries, but found {}",
+            country_names.len()
+        );
     }
 }
