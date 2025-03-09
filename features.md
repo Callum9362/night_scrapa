@@ -1,6 +1,7 @@
 ### 
 1. **Scrape Additional Information**:
     - ~~Add more details for each country (e.g., population, GDP, area, official languages).~~
+    ~~- User agent applied to requests to meet requirements.~~
     - Support scraping from multiple sources for better accuracy and redundancy.
 
 2. **Scheduled Scraping (Cron Jobs)**:

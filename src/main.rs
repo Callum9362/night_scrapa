@@ -14,7 +14,14 @@ struct Country {
 }
 
 async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
-    let res = reqwest::get("https://www.scrapethissite.com/pages/simple/")
+    let client = reqwest::Client::builder()
+        .user_agent("NightScrapaBot/1.0 (+https://github.com/Callum9362/night_scrapa)") // Replace with your own User-Agent
+        .build()?;
+
+
+    let res = client
+        .get("https://www.scrapethissite.com/pages/simple/")
+        .send()
         .await?
         .text()
         .await?;
@@ -63,7 +70,7 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
             area: area,
         });
 
-        sleep(Duration::from_millis(500)).await
+        sleep(Duration::from_secs(1)).await
     }
 
     Ok(countries)
