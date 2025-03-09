@@ -77,15 +77,12 @@ async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(
         if country.name.is_empty() || country.capital.is_empty() {
             continue;
         }
-
+        
         sqlx::query!(
             r#"
             INSERT INTO countries (name, capital, population, area)
             VALUES (?1, ?2, ?3, ?4)
-            ON CONFLICT(name) DO UPDATE SET
-                capital = excluded.capital,
-                population = excluded.population,
-                area = excluded.area
+            ON CONFLICT(name) DO NOTHING
             "#,
             country.name,
             country.capital,
