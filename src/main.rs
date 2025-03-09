@@ -1,6 +1,6 @@
 use reqwest;
 use scraper::{Html, Selector};
-use sqlx::{sqlite::{SqlitePool, SqlitePoolOptions}};
+use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
 use std::error::Error;
 use std::time::Instant;
 use tokio::time::{sleep, Duration};
@@ -15,9 +15,8 @@ struct Country {
 
 async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
     let client = reqwest::Client::builder()
-        .user_agent("NightScrapaBot/1.0 (+https://github.com/Callum9362/night_scrapa)") // Replace with your own User-Agent
+        .user_agent("NightScrapaBot/1.0 (+https://github.com/Callum9362/night_scrapa)")
         .build()?;
-
 
     let res = client
         .get("https://www.scrapethissite.com/pages/simple/")
@@ -29,12 +28,9 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
     let doc = Html::parse_document(&res);
     let country_selector = Selector::parse(".country")?;
     let name_selector = Selector::parse(".country-name")?;
-    let capital_selector
-        = Selector::parse(".country-capital")?;
-    let population_selector
-        = Selector::parse(".country-population")?;
-    let area_selector
-        = Selector::parse(".country-area")?;
+    let capital_selector= Selector::parse(".country-capital")?;
+    let population_selector = Selector::parse(".country-population")?;
+    let area_selector = Selector::parse(".country-area")?;
 
     let mut countries = Vec::new();
 
