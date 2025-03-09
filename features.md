@@ -1,6 +1,6 @@
 ### 
 1. **Scrape Additional Information**:
-    - Add more details for each country (e.g., population, GDP, area, official languages).
+    - ~~Add more details for each country (e.g., population, GDP, area, official languages).~~
     - Support scraping from multiple sources for better accuracy and redundancy.
 
 2. **Scheduled Scraping (Cron Jobs)**:
@@ -35,7 +35,7 @@
     - Speed up the scraping process by implementing asynchronous or multi-threaded scraping for multiple pages in parallel.
 
 2. **Rate Limiting**:
-3. Avoid being blocked by websites by adhering to rate limits (e.g., delay between requests, maximum requests per second).
+~~3. Avoid being blocked by websites by adhering to rate limits (e.g., delay between requests, maximum requests per second).~~
 4. **Load Balancing for Proxies**:
 5. Add support for rotating proxies to scrape data anonymously and efficiently.
 

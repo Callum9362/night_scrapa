@@ -7,5 +7,6 @@ edition = "2024"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
 scraper = "0.17"  # For parsing HTML
 tokio = { version = "1", features = ["full"] }
+tokio-cron-scheduler = "0.13.0"
 sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite"] }
 dotenv = "0.15" # To load environment variables for database credentials

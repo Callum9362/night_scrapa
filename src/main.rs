@@ -3,6 +3,7 @@ use scraper::{Html, Selector};
 use sqlx::{sqlite::{SqlitePool, SqlitePoolOptions}};
 use std::error::Error;
 use std::time::Instant;
+use tokio::time::{sleep, Duration};
 
 #[derive(Debug)]
 struct Country {
@@ -28,43 +29,42 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
     let area_selector
         = Selector::parse(".country-area")?;
 
-    let countries = doc
-        .select(&country_selector)
-        .map(|element| {
+    let mut countries = Vec::new();
 
-            let name = element
-                .select(&name_selector)
-                .next()
-                .map(|el| el.text().collect::<String>().trim().to_string())
-                .unwrap_or_default();
+    for element in doc.select(&country_selector) {
+        let name = element
+            .select(&name_selector)
+            .next()
+            .map(|el| el.text().collect::<String>().trim().to_string())
+            .unwrap_or_default();
 
-            let capital = element
-                .select(&capital_selector)
-                .next()
-                .map(|el| el.text().collect::<String>().trim().to_string())
-                .unwrap_or_default();
+        let capital = element
+            .select(&capital_selector)
+            .next()
+            .map(|el| el.text().collect::<String>().trim().to_string())
+            .unwrap_or_default();
 
-            let population = element
-                .select(&population_selector)
-                .next()
-                .map(|el| el.text().collect::<String>().trim().parse::<i32>().ok())
-                .flatten();
+        let population = element
+            .select(&population_selector)
+            .next()
+            .map(|el| el.text().collect::<String>().trim().parse::<i32>().ok())
+            .flatten();
 
-            let area = element
-                .select(&area_selector)
-                .next()
-                .map(|el| el.text().collect::<String>().trim().parse::<f64>().ok())
-                .flatten();
+        let area = element
+            .select(&area_selector)
+            .next()
+            .map(|el| el.text().collect::<String>().trim().parse::<f64>().ok())
+            .flatten();
 
-            Country {
-                name: name,
-                capital: capital,
-                population: population,
-                area: area,
-            }
+        countries.push( Country {
+            name: name,
+            capital: capital,
+            population: population,
+            area: area,
+        });
 
-        })
-        .collect();
+        sleep(Duration::from_millis(500)).await
+    }
 
     Ok(countries)
 }
