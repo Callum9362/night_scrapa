@@ -15,7 +15,7 @@
 
 ### **Database and Data Management**
 1. **Duplicate Management**:
-    - Build better duplicate-detection mechanisms and log duplicates for manual review.
+    - ~~Build better duplicate-detection mechanisms and log duplicates for manual review.~~
 
 2. **Historical Data Tracking**:
     - Track changes in scraped data over time by storing older versions of records. For example:
@@ -27,7 +27,7 @@
 
 4. **Export Data**:
     - Allow exporting the scraped data in formats like:
-        - JSON
+        - ~~JSON~~
         - CSV
         - XML
 

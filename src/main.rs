@@ -3,7 +3,6 @@ use scraper::{Html, Selector};
 use serde::Serialize;
 use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
 use std::error::Error;
-use std::fs::File;
 use std::time::Instant;
 use tokio::time::{sleep, Duration};
 
@@ -74,13 +73,13 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
     Ok(countries)
 }
 
-fn export_countries_to_json(countries: &[Country], file_path: &str) -> Result<(), Box<dyn Error>> {
-    let file = File::create(file_path)?;
- 
-    serde_json::to_writer_pretty(file, countries)?;
-    println!("Countries exported to {}", file_path);
-    Ok(())
-}
+// fn export_countries_to_json(countries: &[Country], file_path: &str) -> Result<(), Box<dyn Error>> {
+//     let file = File::create(file_path)?;
+//
+//     serde_json::to_writer_pretty(file, countries)?;
+//     println!("Countries exported to {}", file_path);
+//     Ok(())
+// }
 
 
 async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(), Box<dyn Error>> {
@@ -91,8 +90,8 @@ async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(
         
         sqlx::query!(
             r#"
-            INSERT INTO countries (name, capital, population, area)
-            VALUES (?1, ?2, ?3, ?4)
+            INSERT INTO countries (name, capital, population, area, created_at, updated_at)
+            VALUES (?1, ?2, ?3, ?4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             ON CONFLICT(name) DO NOTHING
             "#,
             country.name,
@@ -123,8 +122,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     store_countries(&pool, countries.clone()).await?;
     println!("Countries stored successfully!");
 
-    println!("Exporting countries to JSON...");
-    export_countries_to_json(&countries, "countries.json")?;
+    // println!("Exporting countries to JSON...");
+    // export_countries_to_json(&countries, "countries.json")?;
 
     let duration = start.elapsed();
     println!("Total time to scrape and store countries: {:.2?}", duration);
