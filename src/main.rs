@@ -73,15 +73,6 @@ async fn scrape_countries() -> Result<Vec<Country>, Box<dyn Error>> {
     Ok(countries)
 }
 
-// fn export_countries_to_json(countries: &[Country], file_path: &str) -> Result<(), Box<dyn Error>> {
-//     let file = File::create(file_path)?;
-//
-//     serde_json::to_writer_pretty(file, countries)?;
-//     println!("Countries exported to {}", file_path);
-//     Ok(())
-// }
-
-
 async fn store_countries(pool: &SqlitePool, countries: Vec<Country>) -> Result<(), Box<dyn Error>> {
     for country in countries {
         if country.name.is_empty() || country.capital.is_empty() {
@@ -121,9 +112,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("Storing countries in the database...");
     store_countries(&pool, countries.clone()).await?;
     println!("Countries stored successfully!");
-
-    // println!("Exporting countries to JSON...");
-    // export_countries_to_json(&countries, "countries.json")?;
 
     let duration = start.elapsed();
     println!("Total time to scrape and store countries: {:.2?}", duration);
